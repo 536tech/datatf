@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]*"
+
+permissions:
+  contents: read
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+
+  windows-download:
+    needs: goreleaser
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Download and verify the Windows release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_REPO: ${{ github.repository }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          gh release download $env:RELEASE_TAG --repo $env:RELEASE_REPO `
+            --pattern '*_windows_amd64.zip' --pattern 'checksums.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'Release download failed.' }
+          $archive = Get-Item '*_windows_amd64.zip'
+          $expected = (Select-String -Path checksums.txt -SimpleMatch $archive.Name).Line.Split(' ')[0]
+          if ((Get-FileHash $archive -Algorithm SHA256).Hash -ne $expected) {
+            throw 'The Windows archive checksum does not match.'
+          }
+          Expand-Archive $archive -DestinationPath datatf
+          $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
+          if (Get-Command go -ErrorAction SilentlyContinue) { throw 'Go is still on PATH.' }
+          & .\datatf\datatf.exe version
+          if ($LASTEXITCODE -ne 0) { throw 'The downloaded binary cannot run.' }
+          $help = & .\datatf\datatf.exe export --help
+          if ($LASTEXITCODE -ne 0 -or ($help -join "`n") -notmatch '--resources') {
+            throw 'The downloaded binary does not support the demo export.'
+          }
+          $env:DATATF_TELEMETRY = '0'
+          $status = & .\datatf\datatf.exe telemetry status --json | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0 -or $status.enabled) { throw 'Telemetry opt-out failed.' }
+          $preview = & .\datatf\datatf.exe telemetry preview | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0 -or $preview.event -ne 'command_completed') {
+            throw 'The offline telemetry preview failed.'
+          }
+          if (-not (Test-Path .\datatf\docs\telemetry.md)) { throw 'The telemetry notice is missing.' }

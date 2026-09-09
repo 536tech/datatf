@@ -1,0 +1,6 @@
+{"schemas":[
+  {"name":"default","catalog_name":"sales","full_name":"sales.default","owner":"data-platform"},
+  {"name":"information_schema","catalog_name":"sales","full_name":"sales.information_schema","owner":"System user"},
+  {"name":"bronze","catalog_name":"sales","full_name":"sales.bronze","owner":"data-platform","comment":"Raw landing","storage_root":"abfss://sales@lake.dfs.core.windows.net/bronze"},
+  {"name":"silver","catalog_name":"sales","full_name":"sales.silver","owner":"data-platform"}
+]}

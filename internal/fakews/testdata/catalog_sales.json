@@ -1,0 +1,1 @@
+{"name":"sales","full_name":"sales","catalog_type":"MANAGED_CATALOG","isolation_mode":"ISOLATED","owner":"data-platform","comment":"Sales domain","storage_root":"abfss://sales@lake.dfs.core.windows.net/","properties":{"team":"sales"},"metastore_id":"ms-0001"}

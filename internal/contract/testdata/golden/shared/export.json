@@ -1,0 +1,151 @@
+{
+  "scope": "shared",
+  "tfvars": {
+    "catalogs": {
+      "shared_ref": {
+        "isolation_mode": "OPEN",
+        "owner": "data-platform",
+        "comment": "Reference data shared by every workspace"
+      }
+    },
+    "catalog_access": {
+      "shared_ref": {
+        "account users": [
+          "SELECT",
+          "USE_CATALOG",
+          "USE_SCHEMA"
+        ]
+      }
+    },
+    "schemas": {
+      "shared_ref": [
+        "ref"
+      ]
+    },
+    "schema_access": {
+      "shared_ref": {
+        "ref": {}
+      }
+    },
+    "schema_storage_roots": {},
+    "schema_comments": {
+      "shared_ref": {
+        "ref": "Lookup tables"
+      }
+    },
+    "storage_credentials": {
+      "shared_cred": {
+        "isolation_mode": "ISOLATION_MODE_ISOLATED",
+        "owner": "data-platform",
+        "read_only": true,
+        "azure_managed_identity": {
+          "access_connector_id": "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Databricks/accessConnectors/shared-ac"
+        }
+      }
+    },
+    "storage_credential_access": {
+      "shared_cred": {
+        "data-engineers": [
+          "CREATE_EXTERNAL_LOCATION"
+        ]
+      }
+    },
+    "external_locations": {
+      "public_ref": {
+        "url": "abfss://ref@lake.dfs.core.windows.net/",
+        "credential_name": "shared_cred",
+        "isolation_mode": "ISOLATION_MODE_OPEN",
+        "owner": "data-platform",
+        "read_only": true,
+        "fallback": false,
+        "enable_file_events": false
+      }
+    },
+    "external_location_access": {
+      "public_ref": {}
+    },
+    "workspace_bindings": {
+      "1111|storage_credential|shared_cred": {
+        "workspace_id": 1111,
+        "securable_name": "shared_cred",
+        "securable_type": "storage_credential",
+        "binding_type": "BINDING_TYPE_READ_WRITE"
+      },
+      "2222|storage_credential|shared_cred": {
+        "workspace_id": 2222,
+        "securable_name": "shared_cred",
+        "securable_type": "storage_credential",
+        "binding_type": "BINDING_TYPE_READ_WRITE"
+      }
+    }
+  },
+  "imports": [
+    {
+      "module": "catalog",
+      "key": "shared_ref",
+      "resource": "databricks_catalog",
+      "id": "shared_ref"
+    },
+    {
+      "module": "catalog",
+      "key": "shared_ref",
+      "resource": "databricks_grants",
+      "index": 0,
+      "id": "catalog/shared_ref"
+    },
+    {
+      "module": "schema",
+      "key": "shared_ref.ref",
+      "resource": "databricks_schema",
+      "id": "shared_ref.ref"
+    },
+    {
+      "module": "storage_credential",
+      "key": "shared_cred",
+      "resource": "databricks_storage_credential",
+      "id": "shared_cred"
+    },
+    {
+      "module": "workspace_binding",
+      "key": "1111|storage_credential|shared_cred",
+      "resource": "databricks_workspace_binding",
+      "id": "1111|storage_credential|shared_cred"
+    },
+    {
+      "module": "workspace_binding",
+      "key": "2222|storage_credential|shared_cred",
+      "resource": "databricks_workspace_binding",
+      "id": "2222|storage_credential|shared_cred"
+    },
+    {
+      "module": "storage_credential",
+      "key": "shared_cred",
+      "resource": "databricks_grants",
+      "index": 0,
+      "id": "storage_credential/shared_cred"
+    },
+    {
+      "module": "external_location",
+      "key": "public_ref",
+      "resource": "databricks_external_location",
+      "id": "public_ref"
+    }
+  ],
+  "excluded": [
+    {
+      "area": "catalog",
+      "name": "sales",
+      "ownership": "workspace"
+    },
+    {
+      "area": "storage_credential",
+      "name": "lake_cred",
+      "ownership": "workspace"
+    },
+    {
+      "area": "external_location",
+      "name": "lake_raw",
+      "ownership": "workspace"
+    }
+  ]
+}

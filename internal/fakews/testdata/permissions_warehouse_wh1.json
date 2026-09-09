@@ -1,0 +1,4 @@
+{"object_id":"/sql/warehouses/wh1","object_type":"warehouses","access_control_list":[
+  {"group_name":"analysts","all_permissions":[{"permission_level":"CAN_USE","inherited":false}]},
+  {"group_name":"admins","all_permissions":[{"permission_level":"CAN_MANAGE","inherited":false}]}
+]}

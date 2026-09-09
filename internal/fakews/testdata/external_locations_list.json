@@ -1,0 +1,5 @@
+{"external_locations":[
+  {"name":"metastore_root_location","url":"abfss://metastore@lake.dfs.core.windows.net/","credential_name":"__databricks_managed_cred","isolation_mode":"ISOLATION_MODE_OPEN"},
+  {"name":"lake_raw","url":"abfss://raw@lake.dfs.core.windows.net/","credential_name":"lake_cred","isolation_mode":"ISOLATION_MODE_ISOLATED"},
+  {"name":"public_ref","url":"abfss://ref@lake.dfs.core.windows.net/","credential_name":"shared_cred","isolation_mode":"ISOLATION_MODE_OPEN"}
+]}

@@ -1,0 +1,1 @@
+{"name":"bronze","catalog_name":"sales","full_name":"sales.bronze","owner":"data-platform","comment":"Raw landing","storage_root":"abfss://sales@lake.dfs.core.windows.net/bronze","metastore_id":"ms-0001","catalog_type":"MANAGED_CATALOG"}

@@ -1,0 +1,4 @@
+{"privilege_assignments":[
+  {"principal":"data-engineers","privileges":["USE_SCHEMA","USE_CATALOG","CREATE_SCHEMA"]},
+  {"principal":"a1b2c3d4-0000-0000-0000-000000000001","privileges":["SELECT","USE_CATALOG","USE_SCHEMA"]}
+]}

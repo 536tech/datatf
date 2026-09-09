@@ -1,0 +1,1 @@
+{"name":"public_ref","url":"abfss://ref@lake.dfs.core.windows.net/","credential_name":"shared_cred","credential_id":"cred-2","isolation_mode":"ISOLATION_MODE_OPEN","owner":"data-platform","read_only":true,"fallback":false,"enable_file_events":false}

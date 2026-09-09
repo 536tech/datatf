@@ -1,0 +1,6 @@
+{"catalogs":[
+  {"name":"main","catalog_type":"MANAGED_CATALOG","isolation_mode":"OPEN","owner":"admins"},
+  {"name":"sales","catalog_type":"MANAGED_CATALOG","isolation_mode":"ISOLATED","owner":"data-platform"},
+  {"name":"shared_ref","catalog_type":"MANAGED_CATALOG","isolation_mode":"OPEN","owner":"data-platform"},
+  {"name":"ext_share","catalog_type":"DELTASHARING_CATALOG","owner":"admins"}
+]}

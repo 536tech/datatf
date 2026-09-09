@@ -1,0 +1,85 @@
+version: 2
+
+project_name: datatf
+
+before:
+  hooks:
+    - go test ./...
+
+builds:
+  - id: datatf
+    main: ./cmd/datatf
+    binary: datatf
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/536tech/datatf/internal/cli.version={{ .Version }}
+      - -X github.com/536tech/datatf/internal/cli.commit={{ .ShortCommit }}
+      - -X github.com/536tech/datatf/internal/cli.date={{ .Date }}
+archives:
+  - id: datatf
+    ids:
+      - datatf
+    formats:
+      - tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    files:
+      - LICENSE
+      - README.md
+      - CONTRIBUTING.md
+      - SECURITY.md
+      - docs/telemetry.md
+      - docs/updates.md
+
+checksum:
+  name_template: checksums.txt
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  use: github-native
+
+release:
+  prerelease: auto
+
+# Disabled until the 536tech.datatf package is accepted into the winget community
+# index. Set 'skip_upload: auto' to publish, then open the first pull request against
+# microsoft/winget-pkgs. Manifests still render into dist/winget for review.
+winget:
+  - publisher: 536tech
+    package_identifier: 536tech.datatf
+    package_name: DataTF
+    publisher_url: https://536tech.com
+    publisher_support_url: https://github.com/536tech/datatf/issues
+    homepage: https://datatf.io
+    short_description: Export existing Databricks configuration to Terraform variables and import blocks.
+    license: Apache-2.0
+    license_url: https://github.com/536tech/datatf/blob/main/LICENSE
+    release_notes_url: https://github.com/536tech/datatf/releases/tag/{{ .Tag }}
+    skip_upload: true
+    repository:
+      owner: 536tech
+      name: winget-pkgs
+      token: "{{ envOrDefault \"WINGET_TOKEN\" \"\" }}"
+      branch: "datatf-{{ .Version }}"
+      pull_request:
+        enabled: true
+        base:
+          owner: microsoft
+          name: winget-pkgs
+          branch: master

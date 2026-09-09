@@ -1,0 +1,4 @@
+{"object_id":"/cluster-policies/P1","object_type":"cluster-policy","access_control_list":[
+  {"group_name":"admins","all_permissions":[{"permission_level":"CAN_USE","inherited":true,"inherited_from_object":["/cluster-policies/"]}]},
+  {"group_name":"data-engineers","all_permissions":[{"permission_level":"CAN_USE","inherited":false}]}
+]}

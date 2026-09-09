@@ -1,0 +1,11 @@
+services:
+  minilake:
+    build: .
+    ports:
+      - "127.0.0.1:18443:8443"
+    environment:
+      MINILAKE_TLS: "1"
+      MINILAKE_SPARK_PREWARM: "0"
+      MINILAKE_NOTEBOOK: "0"
+      MINILAKE_PERSIST: "0"
+      MINILAKE_VERBOSE: "1"

@@ -1,0 +1,1 @@
+{"name":"lake_raw","url":"abfss://raw@lake.dfs.core.windows.net/","credential_name":"lake_cred","credential_id":"cred-1","isolation_mode":"ISOLATION_MODE_ISOLATED","owner":"data-platform","comment":"Raw zone","read_only":false,"fallback":false,"enable_file_events":true}

@@ -1,0 +1,1 @@
+{"privilege_assignments":[{"principal":"data-engineers","privileges":["READ_FILES","WRITE_FILES"]}]}

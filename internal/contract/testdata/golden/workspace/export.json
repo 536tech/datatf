@@ -1,0 +1,434 @@
+{
+  "scope": "workspace",
+  "tfvars": {
+    "catalogs": {
+      "sales": {
+        "isolation_mode": "ISOLATED",
+        "owner": "data-platform",
+        "comment": "Sales domain",
+        "storage_root": "abfss://sales@lake.dfs.core.windows.net/",
+        "properties": {
+          "team": "sales"
+        }
+      }
+    },
+    "catalog_access": {
+      "sales": {
+        "a1b2c3d4-0000-0000-0000-000000000001": [
+          "SELECT",
+          "USE_CATALOG",
+          "USE_SCHEMA"
+        ],
+        "data-engineers": [
+          "CREATE_SCHEMA",
+          "USE_CATALOG",
+          "USE_SCHEMA"
+        ]
+      }
+    },
+    "schemas": {
+      "sales": [
+        "bronze",
+        "silver"
+      ]
+    },
+    "schema_access": {
+      "sales": {
+        "bronze": {
+          "ingest@example.com": [
+            "MODIFY",
+            "SELECT"
+          ]
+        },
+        "silver": {}
+      }
+    },
+    "schema_storage_roots": {
+      "sales": {
+        "bronze": "abfss://sales@lake.dfs.core.windows.net/bronze"
+      }
+    },
+    "schema_comments": {
+      "sales": {
+        "bronze": "Raw landing"
+      }
+    },
+    "storage_credentials": {
+      "lake_cred": {
+        "isolation_mode": "ISOLATION_MODE_ISOLATED",
+        "owner": "data-platform",
+        "comment": "Lake access connector",
+        "read_only": false,
+        "azure_managed_identity": {
+          "access_connector_id": "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Databricks/accessConnectors/lake-ac",
+          "managed_identity_id": "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/lake-mi"
+        }
+      }
+    },
+    "storage_credential_access": {
+      "lake_cred": {
+        "data-platform-admins": [
+          "ALL_PRIVILEGES"
+        ]
+      }
+    },
+    "external_locations": {
+      "lake_raw": {
+        "url": "abfss://raw@lake.dfs.core.windows.net/",
+        "credential_name": "lake_cred",
+        "isolation_mode": "ISOLATION_MODE_ISOLATED",
+        "owner": "data-platform",
+        "comment": "Raw zone",
+        "read_only": false,
+        "fallback": false,
+        "enable_file_events": true
+      }
+    },
+    "external_location_access": {
+      "lake_raw": {
+        "data-engineers": [
+          "READ_FILES",
+          "WRITE_FILES"
+        ]
+      }
+    },
+    "workspace_bindings": {
+      "1111|catalog|sales": {
+        "workspace_id": 1111,
+        "securable_name": "sales",
+        "securable_type": "catalog",
+        "binding_type": "BINDING_TYPE_READ_WRITE"
+      },
+      "1111|external_location|lake_raw": {
+        "workspace_id": 1111,
+        "securable_name": "lake_raw",
+        "securable_type": "external_location",
+        "binding_type": "BINDING_TYPE_READ_WRITE"
+      },
+      "1111|storage_credential|lake_cred": {
+        "workspace_id": 1111,
+        "securable_name": "lake_cred",
+        "securable_type": "storage_credential",
+        "binding_type": "BINDING_TYPE_READ_WRITE"
+      }
+    },
+    "cluster_policies": {
+      "Job Family Policy": {
+        "policy_family_id": "job-cluster",
+        "policy_family_definition_overrides": {
+          "custom_tags.team": {
+            "type": "fixed",
+            "value": "data"
+          }
+        },
+        "libraries": [],
+        "permissions": [
+          {
+            "permission_level": "CAN_USE",
+            "service_principal_name": "a1b2c3d4-0000-0000-0000-000000000001"
+          }
+        ]
+      },
+      "Team Policy": {
+        "description": "Pinned runtime for team clusters",
+        "definition": {
+          "autotermination_minutes": {
+            "defaultValue": 30,
+            "maxValue": 60,
+            "type": "range"
+          },
+          "spark_version": {
+            "type": "fixed",
+            "value": "15.4.x-scala2.12"
+          }
+        },
+        "max_clusters_per_user": 2,
+        "libraries": [
+          {
+            "pypi": {
+              "package": "great-expectations==0.18.0"
+            }
+          }
+        ],
+        "permissions": [
+          {
+            "permission_level": "CAN_USE",
+            "group_name": "data-engineers"
+          }
+        ]
+      }
+    },
+    "instance_pools": {
+      "shared-pool": {
+        "node_type_id": "Standard_DS3_v2",
+        "min_idle_instances": 1,
+        "max_capacity": 10,
+        "idle_instance_autotermination_minutes": 15,
+        "enable_elastic_disk": true,
+        "preloaded_spark_versions": [
+          "15.4.x-scala2.12"
+        ],
+        "custom_tags": {
+          "cost_center": "1234"
+        },
+        "azure_attributes": {
+          "availability": "ON_DEMAND_AZURE",
+          "spot_bid_max_price": -1
+        },
+        "permissions": []
+      }
+    },
+    "warehouses": {
+      "Analytics WH": {
+        "cluster_size": "Small",
+        "min_num_clusters": 1,
+        "max_num_clusters": 3,
+        "auto_stop_mins": 20,
+        "warehouse_type": "PRO",
+        "enable_photon": true,
+        "enable_serverless_compute": true,
+        "spot_instance_policy": "COST_OPTIMIZED",
+        "tags": {
+          "team": "analytics"
+        },
+        "permissions": [
+          {
+            "permission_level": "CAN_USE",
+            "group_name": "analysts"
+          }
+        ]
+      }
+    },
+    "secret_scopes": {
+      "db-scope": {
+        "acls": {
+          "jon@example.com": "MANAGE"
+        }
+      },
+      "kv-scope": {
+        "acls": {
+          "admins": "MANAGE",
+          "data-engineers": "READ"
+        },
+        "keyvault_metadata": {
+          "resource_id": "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.KeyVault/vaults/kv-data",
+          "dns_name": "https://kv-data.vault.azure.net/"
+        }
+      }
+    },
+    "service_principals": {
+      "dup-sp (a1b2c3d4-0000-0000-0000-000000000002)": {
+        "display_name": "dup-sp",
+        "allow_cluster_create": false,
+        "allow_instance_pool_create": false,
+        "databricks_sql_access": false,
+        "workspace_access": false
+      },
+      "dup-sp (a1b2c3d4-0000-0000-0000-000000000003)": {
+        "display_name": "dup-sp",
+        "allow_cluster_create": true,
+        "allow_instance_pool_create": false,
+        "databricks_sql_access": false,
+        "workspace_access": false,
+        "workspace_consume": true
+      },
+      "etl-sp": {
+        "allow_cluster_create": false,
+        "allow_instance_pool_create": false,
+        "databricks_sql_access": true,
+        "workspace_access": true
+      }
+    }
+  },
+  "imports": [
+    {
+      "module": "catalog",
+      "key": "sales",
+      "resource": "databricks_catalog",
+      "id": "sales"
+    },
+    {
+      "module": "workspace_binding",
+      "key": "1111|catalog|sales",
+      "resource": "databricks_workspace_binding",
+      "id": "1111|catalog|sales"
+    },
+    {
+      "module": "catalog",
+      "key": "sales",
+      "resource": "databricks_grants",
+      "index": 0,
+      "id": "catalog/sales"
+    },
+    {
+      "module": "schema",
+      "key": "sales.bronze",
+      "resource": "databricks_schema",
+      "id": "sales.bronze"
+    },
+    {
+      "module": "schema",
+      "key": "sales.bronze",
+      "resource": "databricks_grants",
+      "index": 0,
+      "id": "schema/sales.bronze"
+    },
+    {
+      "module": "schema",
+      "key": "sales.silver",
+      "resource": "databricks_schema",
+      "id": "sales.silver"
+    },
+    {
+      "module": "storage_credential",
+      "key": "lake_cred",
+      "resource": "databricks_storage_credential",
+      "id": "lake_cred"
+    },
+    {
+      "module": "workspace_binding",
+      "key": "1111|storage_credential|lake_cred",
+      "resource": "databricks_workspace_binding",
+      "id": "1111|storage_credential|lake_cred"
+    },
+    {
+      "module": "storage_credential",
+      "key": "lake_cred",
+      "resource": "databricks_grants",
+      "index": 0,
+      "id": "storage_credential/lake_cred"
+    },
+    {
+      "module": "external_location",
+      "key": "lake_raw",
+      "resource": "databricks_external_location",
+      "id": "lake_raw"
+    },
+    {
+      "module": "workspace_binding",
+      "key": "1111|external_location|lake_raw",
+      "resource": "databricks_workspace_binding",
+      "id": "1111|external_location|lake_raw"
+    },
+    {
+      "module": "external_location",
+      "key": "lake_raw",
+      "resource": "databricks_grants",
+      "index": 0,
+      "id": "external_location/lake_raw"
+    },
+    {
+      "module": "cluster_policy",
+      "key": "Team Policy",
+      "resource": "databricks_cluster_policy",
+      "id": "P1"
+    },
+    {
+      "module": "cluster_policy",
+      "key": "Team Policy",
+      "resource": "databricks_permissions",
+      "index": 0,
+      "id": "/cluster-policies/P1"
+    },
+    {
+      "module": "cluster_policy",
+      "key": "Job Family Policy",
+      "resource": "databricks_cluster_policy",
+      "id": "P3"
+    },
+    {
+      "module": "cluster_policy",
+      "key": "Job Family Policy",
+      "resource": "databricks_permissions",
+      "index": 0,
+      "id": "/cluster-policies/P3"
+    },
+    {
+      "module": "instance_pool",
+      "key": "shared-pool",
+      "resource": "databricks_instance_pool",
+      "id": "pool-1"
+    },
+    {
+      "module": "warehouse",
+      "key": "Analytics WH",
+      "resource": "databricks_sql_endpoint",
+      "id": "wh1"
+    },
+    {
+      "module": "warehouse",
+      "key": "Analytics WH",
+      "resource": "databricks_permissions",
+      "index": 0,
+      "id": "/sql/warehouses/wh1"
+    },
+    {
+      "module": "secret_scope",
+      "key": "kv-scope",
+      "resource": "databricks_secret_scope",
+      "id": "kv-scope"
+    },
+    {
+      "module": "secret_scope",
+      "key": "kv-scope",
+      "resource": "databricks_secret_acl",
+      "index": "admins",
+      "id": "kv-scope|||admins"
+    },
+    {
+      "module": "secret_scope",
+      "key": "kv-scope",
+      "resource": "databricks_secret_acl",
+      "index": "data-engineers",
+      "id": "kv-scope|||data-engineers"
+    },
+    {
+      "module": "secret_scope",
+      "key": "db-scope",
+      "resource": "databricks_secret_scope",
+      "id": "db-scope"
+    },
+    {
+      "module": "secret_scope",
+      "key": "db-scope",
+      "resource": "databricks_secret_acl",
+      "index": "jon@example.com",
+      "id": "db-scope|||jon@example.com"
+    },
+    {
+      "module": "service_principal",
+      "key": "etl-sp",
+      "resource": "databricks_service_principal",
+      "id": "100"
+    },
+    {
+      "module": "service_principal",
+      "key": "dup-sp (a1b2c3d4-0000-0000-0000-000000000002)",
+      "resource": "databricks_service_principal",
+      "id": "101"
+    },
+    {
+      "module": "service_principal",
+      "key": "dup-sp (a1b2c3d4-0000-0000-0000-000000000003)",
+      "resource": "databricks_service_principal",
+      "id": "102"
+    }
+  ],
+  "excluded": [
+    {
+      "area": "catalog",
+      "name": "shared_ref",
+      "ownership": "shared"
+    },
+    {
+      "area": "storage_credential",
+      "name": "shared_cred",
+      "ownership": "shared"
+    },
+    {
+      "area": "external_location",
+      "name": "public_ref",
+      "ownership": "shared"
+    }
+  ]
+}

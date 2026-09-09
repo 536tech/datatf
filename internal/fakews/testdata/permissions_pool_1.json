@@ -1,0 +1,4 @@
+{"object_id":"/instance-pools/pool-1","object_type":"instance-pool","access_control_list":[
+  {"user_name":"jon@example.com","all_permissions":[{"permission_level":"CAN_MANAGE","inherited":false}]},
+  {"group_name":"admins","all_permissions":[{"permission_level":"CAN_MANAGE","inherited":true,"inherited_from_object":["/instance-pools/"]}]}
+]}

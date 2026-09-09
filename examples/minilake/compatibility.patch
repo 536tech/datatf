@@ -1,0 +1,90 @@
+diff --git a/src/minilake/models/sql.py b/src/minilake/models/sql.py
+index 6ac6b57..cc9ac94 100644
+--- a/src/minilake/models/sql.py
++++ b/src/minilake/models/sql.py
+@@ -39,6 +39,8 @@ class GetWarehouseResponse(BaseModel):
+ class CreateWarehouseRequest(BaseModel):
+     """Request to create a warehouse."""
+ 
++    model_config = ConfigDict(extra="allow")
++
+     name: str
+     cluster_size: str = "Small"
+     comment: Optional[str] = None
+diff --git a/src/minilake/services/identity.py b/src/minilake/services/identity.py
+index e12eaea..4627077 100644
+--- a/src/minilake/services/identity.py
++++ b/src/minilake/services/identity.py
+@@ -1,10 +1,10 @@
+ """Identity / SCIM API endpoints."""
+ 
+-from fastapi import APIRouter, Response
++from fastapi import APIRouter, Request, Response
+ 
+ from minilake.models.identity import MeResponse
+ 
+-router = APIRouter(prefix="/api/2.0", tags=["identity"])
++router = APIRouter(tags=["identity"])
+ 
+ # Fake organization ID returned in response headers
+ FAKE_ORG_ID = "12345678901234567"
+@@ -17,7 +17,17 @@ USER_NAME = "minilake-user"
+ DISPLAY_NAME = "MiniLake Test User"
+ 
+ 
+-@router.get("/preview/scim/v2/Me", response_model=MeResponse)
++@router.get("/.well-known/databricks-config")
++async def get_host_metadata(request: Request) -> dict[str, str]:
++    """Return local workspace metadata for Databricks unified authentication."""
++    return {
++        "cloud": "AZURE",
++        "workspace_id": FAKE_ORG_ID,
++        "oidc_endpoint": f"{str(request.base_url).rstrip('/')}/oidc",
++    }
++
++
++@router.get("/api/2.0/preview/scim/v2/Me", response_model=MeResponse)
+ async def get_current_user(response: Response) -> MeResponse:
+     """Get the current user (fake SCIM endpoint).
+ 
+diff --git a/src/minilake/services/sql_warehouses.py b/src/minilake/services/sql_warehouses.py
+index 28759ac..36dbd46 100644
+--- a/src/minilake/services/sql_warehouses.py
++++ b/src/minilake/services/sql_warehouses.py
+@@ -5,7 +5,7 @@ import time
+ import uuid
+ from typing import Any, Dict
+ 
+-from fastapi import APIRouter
++from fastapi import APIRouter, Request
+ 
+ from minilake.app import get_duckdb_pool
+ from minilake.errors import DatabricksError
+@@ -27,12 +27,13 @@ _state: Dict[str, Any] = {
+ 
+ 
+ @router.post("/warehouses", response_model=CreateWarehouseResponse)
+-async def create_warehouse(req: CreateWarehouseRequest) -> CreateWarehouseResponse:
++async def create_warehouse(req: CreateWarehouseRequest, request: Request) -> CreateWarehouseResponse:
+     """Create a new SQL warehouse."""
+     warehouse_id = str(uuid.uuid4())[:8]
+ 
+     now_ms = int(time.time() * 1000)
+     warehouse = {
++        **req.model_dump(),
+         "id": warehouse_id,
+         "name": req.name,
+         "cluster_size": req.cluster_size,
+@@ -40,6 +41,12 @@ async def create_warehouse(req: CreateWarehouseRequest) -> CreateWarehouseRespon
+         "comment": req.comment,
+         "created_at": now_ms,
+         "updated_at": now_ms,
++        "odbc_params": {
++            "hostname": request.url.hostname,
++            "path": f"/sql/1.0/warehouses/{warehouse_id}",
++            "port": request.url.port or 443,
++            "protocol": request.url.scheme,
++        },
+     }
+ 
+     _state["warehouses"][warehouse_id] = warehouse

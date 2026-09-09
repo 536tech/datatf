@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "event": "command_completed",
+  "version": "0.3.0",
+  "os": "darwin",
+  "arch": "arm64",
+  "command": "export",
+  "scope": "workspace",
+  "outcome": "complete",
+  "error_code": "none",
+  "duration_bucket": "1s_to_10s",
+  "resource_groups": ["catalogs", "warehouses"]
+}

@@ -1,0 +1,5 @@
+{"scopes":[
+  {"name":"jon-pat","backend_type":"DATABRICKS"},
+  {"name":"kv-scope","backend_type":"AZURE_KEYVAULT","keyvault_metadata":{"resource_id":"/subscriptions/sub/resourceGroups/rg/providers/Microsoft.KeyVault/vaults/kv-data","dns_name":"https://kv-data.vault.azure.net/"}},
+  {"name":"db-scope","backend_type":"DATABRICKS"}
+]}

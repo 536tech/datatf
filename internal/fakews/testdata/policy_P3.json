@@ -1,0 +1,1 @@
+{"policy_id":"P3","name":"Job Family Policy","policy_family_id":"job-cluster","policy_family_definition_overrides":"{\"custom_tags.team\":{\"type\":\"fixed\",\"value\":\"data\"}}","definition":"{\"derived\":true}"}

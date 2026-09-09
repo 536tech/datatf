@@ -1,0 +1,1 @@
+{"id":"100","applicationId":"a1b2c3d4-0000-0000-0000-000000000001","displayName":"etl-sp","active":true,"entitlements":[{"value":"workspace-access"},{"value":"databricks-sql-access"}]}

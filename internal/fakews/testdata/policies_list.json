@@ -1,0 +1,5 @@
+{"policies":[
+  {"policy_id":"P1","name":"Team Policy","definition":"{\"autotermination_minutes\":{\"defaultValue\":30,\"maxValue\":60,\"type\":\"range\"},\"spark_version\":{\"type\":\"fixed\",\"value\":\"15.4.x-scala2.12\"}}"},
+  {"policy_id":"P2","name":"Personal Compute","policy_family_id":"personal-vm","is_default":true,"definition":"{}"},
+  {"policy_id":"P3","name":"Job Family Policy","policy_family_id":"job-cluster","policy_family_definition_overrides":"{\"custom_tags.team\":{\"type\":\"fixed\",\"value\":\"data\"}}","definition":"{\"derived\":true}"}
+]}

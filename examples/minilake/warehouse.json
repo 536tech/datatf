@@ -1,0 +1,11 @@
+{
+  "name": "datatf-demo",
+  "cluster_size": "Small",
+  "min_num_clusters": 1,
+  "max_num_clusters": 1,
+  "auto_stop_mins": 10,
+  "warehouse_type": "PRO",
+  "enable_photon": true,
+  "enable_serverless_compute": false,
+  "spot_instance_policy": "COST_OPTIMIZED"
+}

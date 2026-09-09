@@ -1,0 +1,1 @@
+{"policy_id":"P1","name":"Team Policy","description":"Pinned runtime for team clusters","max_clusters_per_user":2,"definition":"{\"autotermination_minutes\":{\"defaultValue\":30,\"maxValue\":60,\"type\":\"range\"},\"spark_version\":{\"type\":\"fixed\",\"value\":\"15.4.x-scala2.12\"}}","libraries":[{"pypi":{"package":"great-expectations==0.18.0"}}]}

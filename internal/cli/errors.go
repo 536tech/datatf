@@ -86,10 +86,12 @@ func outputError(err error) error {
 		"Check the destination and disk access. Use --out with a new directory. Keep existing files.")
 }
 
+// terminalText escapes control, format, and line separator characters so untrusted
+// workspace strings cannot rewrite, hide, or reorder terminal output.
 func terminalText(value string) string {
 	var text strings.Builder
 	for _, char := range value {
-		if unicode.IsControl(char) {
+		if unicode.IsControl(char) || unicode.Is(unicode.Cf, char) || char == '\u2028' || char == '\u2029' {
 			quoted := strconv.QuoteRune(char)
 			text.WriteString(quoted[1 : len(quoted)-1])
 		} else {

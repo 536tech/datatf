@@ -45,11 +45,11 @@ Use inventory --json to check the visible resource selection.`,
 			}
 			rc.out.Success("authenticated")
 			rc.out.Table([]string{"KEY", "VALUE"}, [][]string{
-				{"host", id.Host},
-				{"user", id.UserName},
-				{"auth_type", id.AuthType},
+				{"host", terminalText(id.Host)},
+				{"user", terminalText(id.UserName)},
+				{"auth_type", terminalText(id.AuthType)},
 				{"workspace_id", fmt.Sprint(id.WorkspaceID)},
-				{"metastore_id", id.MetastoreID},
+				{"metastore_id", terminalText(id.MetastoreID)},
 			})
 			return nil
 		},

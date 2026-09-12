@@ -40,6 +40,7 @@ var codes = []string{
 	"none", "other", "invalid_usage", "configuration_error", "authentication_failed",
 	"permission_denied", "not_found", "resource_exhausted", "service_error", "api_error",
 	"connection_failed", "operation_failed", "timeout", "canceled", "partial_result", "output_error",
+	"workspace_error", "render_error",
 }
 
 var releaseVersion = regexp.MustCompile(

@@ -217,7 +217,12 @@ func (rc *runtime) progress() func(string, ...any) {
 		return nil
 	}
 	return func(format string, args ...any) {
-		_, _ = fmt.Fprintf(rc.stderr, format+"\n", args...)
+		// Workspace object names are untrusted. Neutralize terminal control sequences at the sink.
+		safe := make([]any, len(args))
+		for i, arg := range args {
+			safe[i] = terminalText(fmt.Sprint(arg))
+		}
+		_, _ = fmt.Fprintf(rc.stderr, format+"\n", safe...)
 	}
 }
 

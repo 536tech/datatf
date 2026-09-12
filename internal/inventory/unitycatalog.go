@@ -68,11 +68,14 @@ func sortedWorkspaceBindings(bindings []catalog.WorkspaceBinding) []catalog.Work
 	return out
 }
 
+// maxGrantPages bounds a hostile or looping paginated response.
+const maxGrantPages = 1000
+
 // grants reads direct privilege assignments on a securable, following pages.
 func (r *Reader) grants(ctx context.Context, securableType, fullName string) ([]Grant, bool) {
 	out := []Grant{}
 	pageToken := ""
-	for {
+	for page := 1; ; page++ {
 		resp, err := r.ws.Grants.Get(ctx, catalog.GetGrantRequest{
 			SecurableType: securableType,
 			FullName:      fullName,
@@ -92,6 +95,11 @@ func (r *Reader) grants(ctx context.Context, securableType, fullName string) ([]
 		}
 		if resp.NextPageToken == "" {
 			break
+		}
+		if resp.NextPageToken == pageToken || page >= maxGrantPages {
+			r.issue("unity_catalog", fullName, securableType+" grants",
+				fmt.Errorf("pagination did not finish after %d pages", page))
+			return nil, false
 		}
 		pageToken = resp.NextPageToken
 	}
@@ -241,7 +249,8 @@ func (r *Reader) readStorageCredentials(ctx context.Context) {
 			)
 			r.logf("  Storage credential: %s (%s)", name, ownership)
 			sc := &StorageCredential{
-				Info: *info, Ownership: ownership, WorkspaceIDs: ids, WorkspaceBindings: bindings,
+				Info: redactStorageCredential(*info), Ownership: ownership,
+				WorkspaceIDs: ids, WorkspaceBindings: bindings,
 			}
 			sc.Grants, sc.GrantsRead = r.grants(gctx, "storage_credential", name)
 			if sc.Grants == nil {

@@ -96,7 +96,8 @@ Every event has these fields and no others:
 Error categories are `none`, `other`, `invalid_usage`, `configuration_error`,
 `authentication_failed`, `permission_denied`, `not_found`, `resource_exhausted`,
 `service_error`, `api_error`, `connection_failed`, `operation_failed`, `timeout`,
-`canceled`, `partial_result`, and `output_error`. Unknown categories become `other`.
+`canceled`, `partial_result`, `output_error`, `workspace_error`, and `render_error`.
+Unknown categories become `other`.
 
 `--allow-partial` still reports `partial`, even when the command exits successfully.
 Default resource groups also count as selected types.

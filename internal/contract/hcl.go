@@ -186,9 +186,13 @@ func appendTraversalIndex(tokens, index hclwrite.Tokens) hclwrite.Tokens {
 	return append(tokens, &hclwrite.Token{Type: hclsyntax.TokenCBrack, Bytes: []byte("]")})
 }
 
+// commentLine is the only text that bypasses hclwrite. A line break would end the comment,
+// so it is never allowed through.
+var commentLine = strings.NewReplacer("\r\n", " ", "\r", " ", "\n", " ", "\u2028", " ", "\u2029", " ")
+
 func writeComments(buf *bytes.Buffer, lines []string) {
 	for _, line := range lines {
-		buf.WriteString("# " + line + "\n")
+		buf.WriteString("# " + commentLine.Replace(line) + "\n")
 	}
 }
 

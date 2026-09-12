@@ -11,6 +11,11 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Security
 
+- Progress lines, the `auth status` table, and generated HCL comments neutralize control,
+  format, and line separator characters that come from workspace object names.
+- `inventory.json` and `inventory --json` no longer serialize storage credential secret fields.
+- Grant pagination stops with an issue after 1000 pages or a repeated page token.
+- Telemetry records `workspace_error` and `render_error` instead of collapsing them to `other`.
 - The release job no longer receives the winget token or runs tests with release credentials.
 - Release builds use the commit timestamp for the build date and module timestamps.
 - The installers require HTTPS and TLS 1.2, and match checksum entries exactly.

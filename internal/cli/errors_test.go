@@ -193,3 +193,29 @@ func TestOutputFailureDiagnostic(t *testing.T) {
 		t.Fatalf("unexpected diagnostic: %v", failure)
 	}
 }
+
+func TestTerminalTextNeutralizesControlAndFormatCharacters(t *testing.T) {
+	for _, hostile := range []string{
+		"a\x1b[2Kb", "a\rb", "a\u202eb", "a\u2066b", "a\u2028b", "a\u200fb",
+	} {
+		safe := terminalText(hostile)
+		if strings.ContainsAny(safe, "\x1b\r\u202e\u2066\u2028\u200f") {
+			t.Fatalf("%q was not neutralized: %q", hostile, safe)
+		}
+		if !strings.HasPrefix(safe, "a") || !strings.HasSuffix(safe, "b") {
+			t.Fatalf("%q lost visible text: %q", hostile, safe)
+		}
+	}
+	if terminalText("Analytics WH") != "Analytics WH" {
+		t.Fatal("plain text changed")
+	}
+}
+
+func TestProgressOutputNeutralizesWorkspaceNames(t *testing.T) {
+	var stderr strings.Builder
+	rc := &runtime{stderr: &stderr, g: &globals{}}
+	rc.progress()("  Warehouse: %s", "prod\x1b[2K\rok")
+	if got := stderr.String(); strings.Contains(got, "\x1b") || strings.Contains(got, "\r") {
+		t.Fatalf("progress leaked control characters: %q", got)
+	}
+}

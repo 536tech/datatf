@@ -9,6 +9,14 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.0.3] - 2026-09-11
 
+### Security
+
+- The release job no longer receives the winget token or runs tests with release credentials.
+- Release builds use the commit timestamp for the build date and module timestamps.
+- The installers require HTTPS and TLS 1.2, and match checksum entries exactly.
+- The Windows installer keeps unexpanded `%VAR%` entries in the user PATH.
+- `SECURITY.md` lists the reporting channel, response window, and supported versions.
+
 ### Changed
 
 - Telemetry is on by default for interactive sessions. CI and agent sessions still send nothing

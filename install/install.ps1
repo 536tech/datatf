@@ -3,6 +3,7 @@
 # Installs the latest release into %LOCALAPPDATA%\datatf\bin and adds it to the
 # user PATH. Set $env:DATATF_VERSION, such as 1.0.0, to pin a release.
 $ErrorActionPreference = "Stop"
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
 $repo = "536tech/datatf"
 $arch = if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq "Arm64") { "arm64" } else { "amd64" }
@@ -19,12 +20,12 @@ $tmp = Join-Path ([System.IO.Path]::GetTempPath()) "datatf-install-$([guid]::New
 New-Item -ItemType Directory -Force -Path $dest, $tmp | Out-Null
 try {
     Write-Host "Downloading $asset..."
-    Invoke-WebRequest "$base/$asset" -OutFile (Join-Path $tmp $asset)
-    Invoke-WebRequest "$base/checksums.txt" -OutFile (Join-Path $tmp "checksums.txt")
+    Invoke-WebRequest "$base/$asset" -OutFile (Join-Path $tmp $asset) -UseBasicParsing
+    Invoke-WebRequest "$base/checksums.txt" -OutFile (Join-Path $tmp "checksums.txt") -UseBasicParsing
 
-    $line = Select-String -Path (Join-Path $tmp "checksums.txt") -SimpleMatch " $asset" | Select-Object -First 1
+    $line = Get-Content (Join-Path $tmp "checksums.txt") | Where-Object { ($_ -split ' +')[1] -eq $asset } | Select-Object -First 1
     if (-not $line) { throw "checksums.txt has no entry for $asset" }
-    $expected = $line.Line.Split(" ")[0].ToLower()
+    $expected = ($line -split ' +')[0].ToLower()
     $actual = (Get-FileHash (Join-Path $tmp $asset) -Algorithm SHA256).Hash.ToLower()
     if ($expected -ne $actual) { throw "checksum mismatch for $asset" }
 
@@ -34,10 +35,17 @@ try {
     Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-if (($userPath -split ";") -notcontains $dest) {
-    [Environment]::SetEnvironmentVariable("Path", "$userPath;$dest", "User")
-    $env:Path = "$env:Path;$dest"
-    Write-Host "Added $dest to your user PATH. Open a new terminal to use it."
+# Read and write the raw registry value so %VAR% entries in the user PATH stay unexpanded.
+$envKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey("Environment", $true)
+try {
+    $userPath = [string]$envKey.GetValue("Path", "", [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+    if (($userPath -split ";") -notcontains $dest) {
+        $newPath = if ($userPath) { "$userPath;$dest" } else { $dest }
+        $envKey.SetValue("Path", $newPath, [Microsoft.Win32.RegistryValueKind]::ExpandString)
+        $env:Path = "$env:Path;$dest"
+        Write-Host "Added $dest to your user PATH. Open a new terminal to use it."
+    }
+} finally {
+    $envKey.Close()
 }
 & (Join-Path $dest "datatf.exe") version

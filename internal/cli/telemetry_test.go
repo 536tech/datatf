@@ -315,40 +315,45 @@ func TestTelemetryNoticeUntilPreferenceSaved(t *testing.T) {
 	t.Setenv("DATATF_TELEMETRY", "")
 	t.Setenv("DATATF_NO_UPDATE_NOTIFIER", "1")
 	oldTerminal := terminalOutput
-	terminalOutput = func(io.Writer) bool { return true }
+	terminalOutput = func(io.Writer) bool { return false }
 	t.Cleanup(func() { terminalOutput = oldTerminal })
-	out := t.TempDir()
+	out := func() string { return t.TempDir() }
 
-	code, stdout, stderr := run(t, "inventory", "--resources", "warehouses", "--out", out)
-	if code != exitOK || !strings.Contains(stderr, "datatf telemetry disable") ||
-		!strings.Contains(stderr, telemetry.Notice) {
-		t.Fatalf("default consent must print a notice: %d %s", code, stderr)
-	}
-	if strings.Contains(stdout, "telemetry") {
-		t.Fatal("notice changed stdout")
-	}
-	if len(*events) != 1 {
-		t.Fatalf("default consent must send one event: %v", *events)
-	}
-
-	for _, args := range [][]string{
-		{"inventory", "--resources", "warehouses", "--out", out, "--json"},
-		{"inventory", "--resources", "warehouses", "--out", out, "--plain"},
-		{"inventory", "--resources", "warehouses", "--out", out, "--quiet"},
-		{"telemetry", "status"},
-	} {
-		if _, _, stderr := run(t, args...); strings.Contains(stderr, "telemetry disable") {
-			t.Fatalf("notice for %v: %s", args, stderr)
+	// The notice must reach redirected, --json, --plain, and --quiet sessions before any send.
+	for _, flag := range []string{"", "--json", "--plain", "--quiet"} {
+		args := []string{"inventory", "--resources", "warehouses", "--out", out()}
+		if flag != "" {
+			args = append(args, flag)
 		}
+		code, stdout, stderr := run(t, args...)
+		if code != exitOK || !strings.Contains(stderr, "datatf telemetry disable") ||
+			!strings.Contains(stderr, telemetry.Notice) {
+			t.Fatalf("%v: default consent must print a notice: %d %s", args, code, stderr)
+		}
+		if strings.Contains(stdout, "telemetry") {
+			t.Fatalf("%v: notice changed stdout", args)
+		}
+	}
+	if len(*events) != 4 {
+		t.Fatalf("default consent must send one event per run: %v", *events)
+	}
+	if _, _, stderr := run(t, "telemetry", "status"); strings.Contains(stderr, "telemetry disable") {
+		t.Fatalf("notice for an offline control: %s", stderr)
+	}
+
+	// A command that fails after it starts still prints the notice before its event is sent.
+	code, _, stderr := run(t, "export", "--scope", "invalid", "--out", out())
+	if code == exitOK || !strings.Contains(stderr, "telemetry disable") || len(*events) != 5 {
+		t.Fatalf("failed command must notify before sending: %d %s %d", code, stderr, len(*events))
 	}
 
 	for _, action := range []string{"enable", "disable"} {
 		run(t, "telemetry", action)
-		if _, _, stderr := run(t, "inventory", "--resources", "warehouses", "--out", out); strings.Contains(stderr, "telemetry disable") {
+		if _, _, stderr := run(t, "inventory", "--resources", "warehouses", "--out", out()); strings.Contains(stderr, "telemetry disable") {
 			t.Fatalf("notice after saved %s: %s", action, stderr)
 		}
 	}
-	if len(*events) != 5 {
+	if len(*events) != 6 {
 		t.Fatalf("expected events for default and enabled runs only: %d", len(*events))
 	}
 }

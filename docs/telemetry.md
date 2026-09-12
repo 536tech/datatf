@@ -20,8 +20,9 @@ datatf telemetry disable
 
 `enable` saves your consent for future eligible commands.
 `disable` saves an opt-out. It does not delete events that the collector already received.
-Until you save a preference, interactive `inventory` and `export` commands print a short notice
-on stderr with a link to this page. `--json`, `--plain`, and `--quiet` suppress the notice.
+Until you save a preference, `inventory` and `export` print a short notice on stderr with a link
+to this page before they run and before any event is sent. The notice prints in every output mode,
+including `--json`, `--plain`, `--quiet`, and redirected output. `enable` or `disable` silences it.
 `status --json` shows the effective preference, its source, and the settings path.
 
 `preview` prints a sample JSON event through the same encoder that sends events.

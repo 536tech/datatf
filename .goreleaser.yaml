@@ -2,14 +2,14 @@ version: 2
 
 project_name: datatf
 
-before:
-  hooks:
-    - go test ./...
+# CI runs the test suite on a token-free runner before a tag is cut. Tests do not run
+# inside the credentialed release job.
 
 builds:
   - id: datatf
     main: ./cmd/datatf
     binary: datatf
+    mod_timestamp: "{{ .CommitTimestamp }}"
     env:
       - CGO_ENABLED=0
     flags:
@@ -25,7 +25,7 @@ builds:
       - -s -w
       - -X github.com/536tech/datatf/internal/cli.version={{ .Version }}
       - -X github.com/536tech/datatf/internal/cli.commit={{ .ShortCommit }}
-      - -X github.com/536tech/datatf/internal/cli.date={{ .Date }}
+      - -X github.com/536tech/datatf/internal/cli.date={{ .CommitDate }}
 archives:
   - id: datatf
     ids:

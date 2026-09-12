@@ -35,9 +35,9 @@ tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
 echo "Downloading $asset..."
-curl -fsSL -o "$tmp/$asset" "$base/$asset"
-curl -fsSL -o "$tmp/checksums.txt" "$base/checksums.txt"
-expected="$(grep " $asset\$" "$tmp/checksums.txt" | cut -d' ' -f1)"
+curl --proto '=https' --proto-redir '=https' --tlsv1.2 -fsSL -o "$tmp/$asset" "$base/$asset"
+curl --proto '=https' --proto-redir '=https' --tlsv1.2 -fsSL -o "$tmp/checksums.txt" "$base/checksums.txt"
+expected="$(awk -v asset="$asset" '$2 == asset { print $1 }' "$tmp/checksums.txt")"
 if command -v sha256sum >/dev/null 2>&1; then
   actual="$(sha256sum "$tmp/$asset" | cut -d' ' -f1)"
 else

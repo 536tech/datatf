@@ -18,9 +18,10 @@ var sendUsage = telemetry.Send
 
 func newTelemetryCommand(rc *runtime) *cobra.Command {
 	root := &cobra.Command{
-		Use: "telemetry", Short: "Control optional usage metrics (off by default)",
+		Use: "telemetry", Short: "Control optional usage metrics (on by default)",
 		Args: usageArgs(cobra.NoArgs),
-		Long: "Telemetry is off by default. Read " + telemetry.Notice + " before enabling it.\n" +
+		Long: "Telemetry is on by default outside CI and agent sessions. Read " + telemetry.Notice + ".\n" +
+			"Run `datatf telemetry disable` or set DATATF_TELEMETRY=0 to opt out.\n" +
 			"These commands work offline and do not read a Databricks workspace.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return commandRequired(cmd, rc)
@@ -85,6 +86,14 @@ func (rc *runtime) telemetryAction(action string) error {
 	return nil
 }
 
+// writeTelemetryNotice tells interactive users about default telemetry until they save a preference.
+func (rc *runtime) writeTelemetryNotice() {
+	_, _ = fmt.Fprintf(rc.stderr,
+		"\nDataTF sends optional usage metrics without workspace metadata. Notice: %s\n"+
+			"Run `datatf telemetry disable` or set DATATF_TELEMETRY=0 to opt out.\n",
+		telemetry.Notice)
+}
+
 func (rc *runtime) previewUsage() error {
 	payload, err := telemetry.Payload(telemetry.Run{
 		Version: version, OS: goruntime.GOOS, Arch: goruntime.GOARCH,
@@ -109,8 +118,15 @@ func (rc *runtime) beginUsage(command string) {
 }
 
 func (rc *runtime) finishUsage(failed bool) {
-	if rc.usage == nil || !telemetryStatus().Enabled {
+	if rc.usage == nil {
 		return
+	}
+	status := telemetryStatus()
+	if !status.Enabled {
+		return
+	}
+	if status.Source == "default" && rc.updateOutputAllowed() {
+		rc.writeTelemetryNotice()
 	}
 	if failed {
 		rc.usage.Outcome = "error"

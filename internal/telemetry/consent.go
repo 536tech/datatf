@@ -24,6 +24,7 @@ type consent struct {
 
 // Resolve gives environment opt-outs priority over saved consent.
 // An explicit environment opt-in is required in detected automation sessions.
+// Without a saved preference, telemetry is on. Invalid or unreadable settings turn it off.
 func Resolve(path string, getenv func(string) string) Status {
 	status := Status{Source: "default", ConfigFile: path}
 	if value := getenv("DO_NOT_TRACK"); value == "1" || strings.EqualFold(value, "true") {
@@ -40,6 +41,7 @@ func Resolve(path string, getenv func(string) string) Status {
 	}
 	enabled, err := readConsent(path)
 	if os.IsNotExist(err) {
+		status.Enabled = true
 		return status
 	}
 	status.Source = "config"
@@ -88,7 +90,7 @@ func readConsent(path string) (bool, error) {
 	return saved.Enabled, nil
 }
 
-// SaveConsent replaces only DataTF's consent file. Invalid or missing settings default to off.
+// SaveConsent replaces only DataTF's consent file. Invalid settings turn telemetry off.
 func SaveConsent(path string, enabled bool) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
 		return err

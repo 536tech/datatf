@@ -10,7 +10,7 @@ import (
 func TestConsentDefaultsWithoutFiles(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "datatf", "telemetry.json")
 	getenv := func(string) string { return "" }
-	if status := Resolve(path, getenv); status.Enabled || status.Source != "default" {
+	if status := Resolve(path, getenv); !status.Enabled || status.Source != "default" {
 		t.Fatalf("default: %+v", status)
 	}
 	if _, err := os.Stat(filepath.Dir(path)); !os.IsNotExist(err) {

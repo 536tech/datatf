@@ -1,4 +1,4 @@
-// Package telemetry builds opt-in usage events without workspace metadata.
+// Package telemetry builds optional usage events without workspace metadata.
 package telemetry
 
 import (

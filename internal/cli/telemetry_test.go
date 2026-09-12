@@ -49,7 +49,7 @@ func TestTelemetryControlsAreOffline(t *testing.T) {
 	for _, test := range []struct {
 		action  string
 		enabled bool
-	}{{"status", false}, {"enable", true}, {"status", true}, {"disable", false}, {"status", false}} {
+	}{{"status", true}, {"enable", true}, {"status", true}, {"disable", false}, {"status", false}} {
 		status := runTelemetryStatus(t, test.action)
 		if status.Enabled != test.enabled {
 			t.Fatalf("%s: unexpected consent: %+v", test.action, status)
@@ -307,4 +307,48 @@ func TestTelemetryOutputErrorIsCoarse(t *testing.T) {
 		t.Fatalf("output failure: %d %s", code, &stderr)
 	}
 	assertUsageOutcome(t, *events, "error", "operation_failed")
+}
+
+func TestTelemetryNoticeUntilPreferenceSaved(t *testing.T) {
+	events := captureUsage(t)
+	isolateAuth(t, fakews.New(t))
+	t.Setenv("DATATF_TELEMETRY", "")
+	t.Setenv("DATATF_NO_UPDATE_NOTIFIER", "1")
+	oldTerminal := terminalOutput
+	terminalOutput = func(io.Writer) bool { return true }
+	t.Cleanup(func() { terminalOutput = oldTerminal })
+	out := t.TempDir()
+
+	code, stdout, stderr := run(t, "inventory", "--resources", "warehouses", "--out", out)
+	if code != exitOK || !strings.Contains(stderr, "datatf telemetry disable") ||
+		!strings.Contains(stderr, telemetry.Notice) {
+		t.Fatalf("default consent must print a notice: %d %s", code, stderr)
+	}
+	if strings.Contains(stdout, "telemetry") {
+		t.Fatal("notice changed stdout")
+	}
+	if len(*events) != 1 {
+		t.Fatalf("default consent must send one event: %v", *events)
+	}
+
+	for _, args := range [][]string{
+		{"inventory", "--resources", "warehouses", "--out", out, "--json"},
+		{"inventory", "--resources", "warehouses", "--out", out, "--plain"},
+		{"inventory", "--resources", "warehouses", "--out", out, "--quiet"},
+		{"telemetry", "status"},
+	} {
+		if _, _, stderr := run(t, args...); strings.Contains(stderr, "telemetry disable") {
+			t.Fatalf("notice for %v: %s", args, stderr)
+		}
+	}
+
+	for _, action := range []string{"enable", "disable"} {
+		run(t, "telemetry", action)
+		if _, _, stderr := run(t, "inventory", "--resources", "warehouses", "--out", out); strings.Contains(stderr, "telemetry disable") {
+			t.Fatalf("notice after saved %s: %s", action, stderr)
+		}
+	}
+	if len(*events) != 5 {
+		t.Fatalf("expected events for default and enabled runs only: %d", len(*events))
+	}
 }

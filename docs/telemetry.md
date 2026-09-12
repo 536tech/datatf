@@ -1,6 +1,8 @@
 # Optional telemetry
 
-Telemetry is off by default. DataTF exports work without telemetry.
+Telemetry is on by default for interactive sessions. DataTF exports work without telemetry.
+CI and agent sessions never send events unless you set `DATATF_TELEMETRY=1`.
+To opt out, run `datatf telemetry disable` or set `DATATF_TELEMETRY=0`.
 Automatic [update checks](updates.md) are separate from telemetry and have their own control.
 536 Technologies uses optional command metrics to choose platform support, resource coverage,
 and reliability work.
@@ -16,9 +18,10 @@ datatf telemetry enable
 datatf telemetry disable
 ```
 
-Read this notice before you run `enable`.
-That command saves your consent for future eligible commands.
+`enable` saves your consent for future eligible commands.
 `disable` saves an opt-out. It does not delete events that the collector already received.
+Until you save a preference, interactive `inventory` and `export` commands print a short notice
+on stderr with a link to this page. `--json`, `--plain`, and `--quiet` suppress the notice.
 `status --json` shows the effective preference, its source, and the settings path.
 
 `preview` prints a sample JSON event through the same encoder that sends events.
@@ -34,7 +37,8 @@ DataTF stores only consent in `datatf/telemetry.json` under your user configurat
 | Linux | `$XDG_CONFIG_HOME/datatf/telemetry.json`, or `~/.config/datatf/telemetry.json` |
 
 The consent file is separate from `.databrickscfg`.
-Missing, invalid, or unreadable consent leaves telemetry off.
+A missing file uses the default, which is on.
+Invalid or unreadable consent leaves telemetry off.
 
 ### Environment controls
 
@@ -56,7 +60,7 @@ DataTF checks these controls in order:
 2. `DATATF_TELEMETRY=1` gives explicit consent for the process.
    Any other nonempty value disables telemetry.
 3. A detected CI or agent session disables saved consent.
-4. Otherwise, DataTF uses saved consent. The default is off.
+4. Otherwise, DataTF uses saved consent. Without a saved preference, telemetry is on.
 
 CI and agent detection checks `CI`, `GITHUB_ACTIONS`, `TF_BUILD`, `GITLAB_CI`, `JENKINS_URL`,
 `CODEX_THREAD_ID`, `CODEX_CI`, `CLAUDECODE`, and `CLAUDE_CODE_ENTRYPOINT`.

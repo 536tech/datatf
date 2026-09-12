@@ -14,8 +14,9 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Telemetry is on by default for interactive sessions. CI and agent sessions still send nothing
   unless `DATATF_TELEMETRY=1` is set. `DO_NOT_TRACK`, `DATATF_TELEMETRY=0`, and
   `datatf telemetry disable` still opt out. Invalid consent files still turn telemetry off.
-- Interactive `inventory` and `export` commands print a one-line telemetry notice on stderr until
-  you save a preference with `datatf telemetry enable` or `datatf telemetry disable`.
+- `inventory` and `export` print a short telemetry notice on stderr before they run and before any
+  event is sent, in every output mode, until you save a preference with `datatf telemetry enable`
+  or `datatf telemetry disable`.
 
 ## [1.0.2] - 2026-09-09
 

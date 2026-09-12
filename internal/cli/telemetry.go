@@ -86,11 +86,14 @@ func (rc *runtime) telemetryAction(action string) error {
 	return nil
 }
 
-// writeTelemetryNotice tells interactive users about default telemetry until they save a preference.
+// writeTelemetryNotice runs before the command and before any event leaves the machine.
+// It prints in every output mode until the user saves a preference, so a redirected,
+// --json, --plain, or --quiet session still learns about default telemetry.
 func (rc *runtime) writeTelemetryNotice() {
 	_, _ = fmt.Fprintf(rc.stderr,
-		"\nDataTF sends optional usage metrics without workspace metadata. Notice: %s\n"+
-			"Run `datatf telemetry disable` or set DATATF_TELEMETRY=0 to opt out.\n",
+		"DataTF sends optional usage metrics without workspace metadata. Notice: %s\n"+
+			"Run `datatf telemetry disable` or set DATATF_TELEMETRY=0 to opt out. "+
+			"Run `datatf telemetry enable` to keep it and silence this notice.\n",
 		telemetry.Notice)
 }
 
@@ -115,18 +118,17 @@ func (rc *runtime) beginUsage(command string) {
 		Command: command, Scope: "none", Outcome: "complete", ErrorCode: "none",
 	}
 	rc.usageStarted = time.Now()
+	if status := telemetryStatus(); status.Enabled && status.Source == "default" {
+		rc.writeTelemetryNotice()
+	}
 }
 
 func (rc *runtime) finishUsage(failed bool) {
 	if rc.usage == nil {
 		return
 	}
-	status := telemetryStatus()
-	if !status.Enabled {
+	if !telemetryStatus().Enabled {
 		return
-	}
-	if status.Source == "default" && rc.updateOutputAllowed() {
-		rc.writeTelemetryNotice()
 	}
 	if failed {
 		rc.usage.Outcome = "error"

@@ -32,7 +32,7 @@ func RenderResources(ex *contract.Export, opts Options, root bool) (map[string][
 	if !root {
 		return files, nil
 	}
-	main, variables := resourceRoot(modules, opts.ModuleVersion)
+	main, variables := resourceRoot(modules, opts)
 	maps.Copy(files, map[string][]byte{
 		"main.tf": main, "variables.tf": variables,
 		"providers.tf": providerFile(opts), "versions.tf": []byte(versionsTF),
@@ -51,11 +51,15 @@ export.json retains the canonical DataTF data structure, not the resource-module
 Keep this layout after import. A layout change requires a reviewed state migration.
 `
 
-func resourceRoot(modules []contract.ResourceModule, version string) ([]byte, []byte) {
+func resourceRoot(modules []contract.ResourceModule, opts Options) ([]byte, []byte) {
 	main, variables := hclwrite.NewEmptyFile(), hclwrite.NewEmptyFile()
 	for _, module := range modules {
 		body := main.Body().AppendNewBlock("module", []string{module.Name}).Body()
 		body.SetAttributeValue("source", cty.StringVal(module.Source))
+		version := opts.ModuleVersion
+		if resolved, ok := opts.ModuleVersions[module.Source]; ok {
+			version = resolved
+		}
 		body.SetAttributeValue("version", cty.StringVal(version))
 		body.SetAttributeTraversal("for_each", traversal("var", module.Name))
 		for _, name := range resourceInputNames(module.Values) {

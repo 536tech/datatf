@@ -55,7 +55,7 @@ func readResourceModules(t *testing.T, out string) map[string]bool {
 		}
 		for key, want := range map[string]string{
 			"source":  "registry.terraform.io/536tech/" + registryName + "/databricks",
-			"version": "1.0.0",
+			"version": "1.0.1",
 		} {
 			value, diags := block.Body.Attributes[key].Expr.Value(nil)
 			if diags.HasErrors() || value.AsString() != want {

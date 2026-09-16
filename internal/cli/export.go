@@ -16,17 +16,18 @@ import (
 )
 
 type exportOptions struct {
-	scope        string
-	outDir       string
-	rootModule   string
-	allowPartial bool
-	scaffold     bool
-	moduleSource string
-	moduleVer    string
-	moduleLayout string
-	resources    []string
-	name         *string
-	profile      string
+	scope          string
+	outDir         string
+	rootModule     string
+	allowPartial   bool
+	scaffold       bool
+	moduleSource   string
+	moduleVer      string
+	moduleVersions map[string]string
+	moduleLayout   string
+	resources      []string
+	name           *string
+	profile        string
 }
 
 func newExportCommand(rc *runtime) *cobra.Command {
@@ -80,7 +81,7 @@ from other groups. Use a new output directory for each export.`,
 	flags.StringVar(&opts.moduleSource, "module-source", scaffold.DefaultModuleSource,
 		"module source for --scaffold (registry address, Git URL, or local path)")
 	flags.StringVar(&opts.moduleVer, "module-version", scaffold.DefaultModuleVersion,
-		"Registry module version for --scaffold")
+		"Registry module version or latest for --scaffold (default: tested release)")
 	flags.StringSliceVar(&opts.resources, "resources", nil,
 		"limit reads to resource groups (comma-separated)")
 	flags.String("name", "", "select one exact name within one --resources group")
@@ -122,6 +123,15 @@ func (opts *exportOptions) validateRoot() error {
 }
 
 func (opts *exportOptions) prepareLayout(cmd *cobra.Command) error {
+	if opts.moduleVer == "latest" {
+		if !opts.scaffold {
+			return fmt.Errorf("%w: --module-version latest requires --scaffold", errUsage)
+		}
+		if opts.moduleLayout == "workspace" && !scaffold.PublicRegistryModule(opts.moduleSource) {
+			return fmt.Errorf("%w: --module-version latest requires a public Terraform Registry module source", errUsage)
+		}
+	}
+
 	switch opts.moduleLayout {
 	case "workspace":
 		return nil
@@ -136,8 +146,8 @@ func (opts *exportOptions) prepareLayout(cmd *cobra.Command) error {
 		return fmt.Errorf("%w: --root-module must be empty with --module-layout resources", errUsage)
 	}
 	opts.rootModule = ""
-	if !regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+$`).MatchString(opts.moduleVer) {
-		return fmt.Errorf("%w: --module-version needs an exact release such as 1.0.0 "+
+	if opts.moduleVer != "latest" && !regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+$`).MatchString(opts.moduleVer) {
+		return fmt.Errorf("%w: --module-version needs latest or an exact release such as 1.0.0 "+
 			"with --module-layout resources", errUsage)
 	}
 	return nil
@@ -157,6 +167,9 @@ func (opts *exportOptions) run(cmd *cobra.Command, rc *runtime) error {
 	}
 	if err := opts.checkReport(rc, rep); err != nil {
 		return err
+	}
+	if err := opts.resolveVersions(cmd.Context(), ex); err != nil {
+		return withHint(err, "module_version_error", "Retry the Registry lookup or use the tested default without --module-version latest.")
 	}
 	files, err := opts.files(ex, rep)
 	if err != nil {
@@ -193,7 +206,7 @@ func (opts *exportOptions) scaffoldFiles(ex *contract.Export, rep *contract.Repo
 ) {
 	options := scaffold.Options{
 		Scope: ex.Scope, Host: rep.Host, Profile: opts.profile, RootModule: opts.rootModule,
-		ModuleSource: opts.moduleSource, ModuleVersion: opts.moduleVer,
+		ModuleSource: opts.moduleSource, ModuleVersion: opts.moduleVer, ModuleVersions: opts.moduleVersions,
 	}
 	if opts.moduleLayout == "resources" {
 		return scaffold.RenderResources(ex, options, opts.scaffold)

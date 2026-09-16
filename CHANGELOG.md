@@ -16,6 +16,7 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- CI supports manual runs to verify a release commit when a push event does not start a run.
 - Default scaffold pins use module version 1.0.1, with input validation and permission checks
   in each resource module and unknown grant-target checks in the workspace pattern.
 

@@ -68,11 +68,13 @@ func latestVersion(ctx context.Context, client *http.Client, source string) (str
 	if len(listing.Modules) > 0 {
 		for _, release := range listing.Modules[0].Versions {
 			v := "v" + release.Version
-			// Canonical stable versions have all three numeric components and no prefix.
-			if semver.Canonical(v) != v || semver.Prerelease(v) != "" {
+			// Require all three numeric components; stable releases may include build metadata.
+			if semver.Canonical(v)+semver.Build(v) != v || semver.Prerelease(v) != "" {
 				continue
 			}
-			if latest == "" || semver.Compare(v, "v"+latest) > 0 {
+			comparison := semver.Compare(v, "v"+latest)
+			// Build metadata has equal SemVer precedence. Break ties independently of API order.
+			if latest == "" || comparison > 0 || (comparison == 0 && release.Version > latest) {
 				latest = strings.TrimPrefix(v, "v")
 			}
 		}

@@ -184,7 +184,7 @@ func TestExportScaffoldRegistryDefault(t *testing.T) {
 			}
 			content := strings.Join(strings.Fields(string(main)), " ")
 			for _, want := range []string{
-				`source = "536tech/workspace/databricks"`, `version = "1.0.0"`,
+				`source = "536tech/workspace/databricks"`, `version = "1.0.1"`,
 			} {
 				if !strings.Contains(content, want) {
 					t.Errorf("main.tf missing %q:\n%s", want, main)

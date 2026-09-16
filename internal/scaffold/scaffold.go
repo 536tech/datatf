@@ -17,7 +17,7 @@ import (
 const DefaultModuleSource = "536tech/workspace/databricks"
 
 // DefaultModuleVersion pins the tested Registry release for both layouts.
-const DefaultModuleVersion = "1.0.0"
+const DefaultModuleVersion = "1.0.1"
 
 // Options control the generated root.
 type Options struct {

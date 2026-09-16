@@ -7,6 +7,18 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-16
+
+### Added
+
+- `export --scaffold --module-version latest` resolves the latest stable public Registry version
+  for each selected module and writes exact version pins. Lookup failures stop before file writes.
+
+### Changed
+
+- Default scaffold pins use module version 1.0.1, with input validation and permission checks
+  in each resource module and unknown grant-target checks in the workspace pattern.
+
 ## [1.0.3] - 2026-09-11
 
 ### Security

@@ -6,8 +6,8 @@ Neither creates Azure workspaces or exports workloads, stored data, or secret va
 
 | `--module-layout` | Root calls | Default module version |
 | --- | --- | --- |
-| `workspace` (default) | `536tech/workspace/databricks` | `1.0.0` |
-| `resources` | Individual `536tech` Registry modules | `1.0.0` |
+| `workspace` (default) | `536tech/workspace/databricks` | `1.0.1` |
+| `resources` | Individual `536tech` Registry modules | `1.0.1` |
 
 ## Individual modules
 
@@ -63,7 +63,7 @@ Use the default for the tested contract. The workspace module pins its own child
 `latest` supports public Registry sources only; it rejects Git, local, and private Registry sources.
 
 
-The resource layout pins every emitted module to an exact version. Use `--module-version 1.0.0`
+The resource layout pins every emitted module to an exact version. Use `--module-version 1.0.1`
 to select that release explicitly. A different version must exist for every selected module and keep
 the same inputs and resource addresses. Version ranges are not supported for this layout.
 

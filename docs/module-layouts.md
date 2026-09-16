@@ -44,6 +44,25 @@ The modules manage the resources in the [resource matrix](../README.md#resource-
 
 ## Versions and inputs
 
+The default pins the latest release tested with this DataTF build. It needs no Registry lookup.
+Use `--module-version latest --scaffold` to select newer stable releases:
+
+```sh
+datatf export --profile analytics --resources warehouses --module-layout resources \
+  --module-version latest --scaffold --out ./warehouse-latest
+```
+
+DataTF resolves each selected module independently through the public Terraform Registry.
+It writes exact versions into `main.tf`; later `terraform init` calls do not select newer module releases.
+Pre-release versions are excluded. A failed lookup stops the export before any output files are written.
+The lookup sends module source addresses only, with no workspace credentials or metadata.
+
+`latest` is an explicit opt-in, not a compatibility certification. It can select a new major version.
+Review the module changes and require an imports-only plan before apply.
+Use the default for the tested contract. The workspace module pins its own child-module versions.
+`latest` supports public Registry sources only; it rejects Git, local, and private Registry sources.
+
+
 The resource layout pins every emitted module to an exact version. Use `--module-version 1.0.0`
 to select that release explicitly. A different version must exist for every selected module and keep
 the same inputs and resource addresses. Version ranges are not supported for this layout.

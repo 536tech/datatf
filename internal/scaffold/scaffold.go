@@ -21,12 +21,13 @@ const DefaultModuleVersion = "1.0.0"
 
 // Options control the generated root.
 type Options struct {
-	Scope         contract.Scope
-	Host          string
-	Profile       string
-	RootModule    string
-	ModuleSource  string
-	ModuleVersion string
+	Scope          contract.Scope
+	Host           string
+	Profile        string
+	RootModule     string
+	ModuleSource   string
+	ModuleVersion  string
+	ModuleVersions map[string]string
 }
 
 var variableNames = []string{

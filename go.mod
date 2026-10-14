@@ -3,12 +3,12 @@ module github.com/536tech/datatf
 go 1.26.0
 
 require (
-	github.com/databricks/databricks-sdk-go v0.178.0
-	github.com/hashicorp/hcl/v2 v2.24.0
+	github.com/databricks/databricks-sdk-go v0.186.0
+	github.com/hashicorp/hcl/v2 v2.25.0
 	github.com/spf13/cobra v1.10.2
 	github.com/zclconf/go-cty v1.19.0
 	golang.org/x/mod v0.41.0
-	golang.org/x/sync v0.23.0
+	golang.org/x/sync v0.24.0
 	golang.org/x/term v0.46.0
 )
 
